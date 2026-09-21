@@ -1,0 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS raw_data;
+
+CREATE TABLE raw_data (
+
+);

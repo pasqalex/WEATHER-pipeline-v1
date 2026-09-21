@@ -1,0 +1,48 @@
+services:
+    db:
+      image: postgres:18
+      environment:
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD_FILE: /run/secrets/password
+        POSTGRES_DB: ${POSTGRES_DB}
+      secrets:
+        - password
+      ports:
+        - "5435:5432"
+      volumes:
+        - weather_pgdata:/var/lib/postgresql
+        - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+        interval: 5s
+        timeout: 10s
+        retries: 10
+        start_period: 10s
+      restart: unless-stopped
+
+    take-script:
+      build:
+        context: .
+        dockerfile: Dockerfile.debug
+      depends_on:
+        db:
+          condition: service_healthy
+      environment:
+        DB_HOST: db
+        DB_PORT: 5432
+        DB_NAME: ${POSTGRES_DB}
+        DB_USER: ${POSTGRES_USER}
+        DB_PASSWORD_FILE: /run/secrets/password
+      secrets:
+        - password
+      volumes:
+        - .:/pipe
+      stdin_open: true
+      tty: true
+
+secrets:
+  password:
+    file: ./secrets/password.txt
+
+volumes:
+  weather_pgdata:

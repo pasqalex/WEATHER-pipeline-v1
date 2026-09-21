@@ -1,0 +1,28 @@
+FROM python:3.12-slim as builder
+
+WORKDIR /install
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir --target=/install/deps -r requirements.txt
+
+
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/deps
+ENV PATH=/deps/bin:$PATH
+
+WORKDIR /pipe
+
+RUN useradd -m 1001
+
+COPY --from=builder /install/deps /deps
+
+COPY pipe/ /pipe/
+COPY data/ /data/
+
+RUN chown -R 1001:1001 /pipe /data
+USER 1001
+
+CMD ["python", "take_weather"]
