@@ -2,9 +2,22 @@ import os
 import sys
 import requests
 import json
+import logging
 
 from dotenv import load_dotenv
 from datetime import datetime
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(
+    logging.Formatter(
+        "%(levelname)-8s | %(asctime)s | %(message)s"
+    )
+)
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 def extractData() -> dict:
     load_dotenv()
@@ -37,17 +50,18 @@ def extractData() -> dict:
     return data
 
 def saveRawData(data: dict, filepath: str):
-    with open(filepath, "a", encoding="utf-8") as rawFile:
+    with open(filepath, "w", encoding="utf-8") as rawFile:
         json.dump(data, rawFile, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
     fileName = f"rawDataWeather-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-    path = f"<your path to file>/{fileName}"
+    path = f"<your path to file>{fileName}"
 
     try:
-        print("Start extraction...")
+        logger.info("Start extraction...")
         weather = extractData()
         saveRawData(weather, path)
-        print("Success!")
+        logger.info("Success!")
     except Exception as er:
-        raise ValueError(f"Error: {er}")
+        logger.exception("Script dead!")
+        sys.exit(1)
