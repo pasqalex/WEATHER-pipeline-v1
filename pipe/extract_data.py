@@ -1,31 +1,44 @@
-import os
 import requests
+import os
+import sys
 from dotenv import load_dotenv
 
-load_dotenv()
-token = os.getenv("OPENWEATHER_TOKEN")
+def dataExtract() -> dict:
+    load_dotenv()
 
-url = "https://api.openweathermap.org/data/2.5/weather"
-parameters = {
-    "lat": 43.0,
-    "lon": 141.35,
-    "units": "metric",
-    "lang": "en",
-    "appid": token
-}
+    token = os.getenv("OPENWEATHER_TOKEN")
 
-response = requests.get(url, params=parameters)
-print(f"Status: {response.status_code}")
+    if not token:
+        raise ValueError("Token not found in .env")
 
-if (response.status_code == 200):
-    data = response.json()
+    url = "https://api.openweathermap.org/data/2.5/weather"
+    block = {
+        "lat": 43.0,
+        "lon": 141.35,
+        "units": "metric",
+        "lang": "en",
+        "appid": token
+    }
 
-    city = data["name"]
-    temperature = data["main"]["temp"]
-    weather_desc = data["weather"][0]["description"]
+    response = requests.get(url, params=block, timeout=20)
 
-    print(f"Weather in {city} now:")
-    print(f"Temperature: {temperature} C")
-    print(f"Now outside: {weather_desc}")
-else:
-    print("API error:", response.text)
+    response.raise_for_status()
+
+    return response.json()
+
+
+def saveRawData(data: dict, filepath: str):
+    import json
+
+    with open(filepath, "w", encoding="utf-8") as rawFile:
+        json.dump(data, rawFile, ensure_ascii=False, indent=4)
+
+if __name__ == "__main__":
+    try:
+        print("Start extraction...")
+        weather = dataExtract()
+        saveRawData(weather, "<your path to file>")
+        print("Success!")
+    except Exception as er:
+        print(f"Error: {er}")
+        sys.exit(1)
