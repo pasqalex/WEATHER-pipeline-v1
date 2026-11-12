@@ -1,3 +1,5 @@
-psycopg[binary]
-requests
 pandas
+"psycopg[binary]"
+logging
+python3-json-logging
+requests
