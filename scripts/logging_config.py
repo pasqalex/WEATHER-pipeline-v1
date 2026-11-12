@@ -1,17 +1,24 @@
 import logging
 
+from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
-path = "/home/pasqalex/pipelines/weatherPipe/tmp/"
-fileName_DEBUG = f"dataWeatherExtract-DEBUG-{datetime.now().strftime('%Y-%m-%d %H-%M-%S')}.txt"
-fileName_ERROR = f"dataWeatherExtract-ERROR-{datetime.now().strftime('%Y-%m-%d %H-%M-%S')}.txt"
+path = "<path to your file>"
 
 def full_logs(record):
     return record.levelno in (logging.INFO, logging.WARNING)
 
 def configure_logging() -> None:
-    handler1 = logging.FileHandler(f"{path}{fileName_DEBUG}", delay=True)
+    handler1 = logging.FileHandler(f"{path}INFO.log", delay=True)
     handler1.setLevel(logging.INFO)
+
+    handler1 = RotatingFileHandler(
+        filename=f"{path}INFO.log",
+        maxBytes=1 * 10240 * 10240,
+        backupCount=5,
+        encoding="utf-8"
+    )
+
     handler1.addFilter(full_logs)
     handler1.setFormatter(
     logging.Formatter(
