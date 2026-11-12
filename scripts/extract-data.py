@@ -40,8 +40,8 @@ def extractData() -> dict:
     logger.info("File isn't empty.")
 
     try:
-        logger.info("JSON here!")
         data = response.json()
+        logger.info("JSON parsed successfully.")
     except requests.exceptions.JSONDecodeError:
         raise ValueError("Server didn't return JSON!")
 
@@ -51,9 +51,10 @@ def saveRawData(data: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as rawFile:
         json.dump(data, rawFile, ensure_ascii=False, indent=4)
         logger.info("File saved!")
+        
 if __name__ == "__main__":
     fileName = f"rawDataWeather-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-    path = f"/home/pasqalex/pipelines/weatherPipe/tmp/jsonFiles/{fileName}"
+    path = f"<your path to file>{fileName}"
 
     try:
         logger.info("Start extraction...")
