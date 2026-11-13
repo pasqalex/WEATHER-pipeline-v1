@@ -4,22 +4,23 @@ import requests
 import json
 import logging
 
+from load_data import loadToDB
+
 from dotenv import load_dotenv
 from datetime import datetime
 from logging_config import configure_logging
 
+load_dotenv()
 configure_logging()
 
-logger = logging.getLogger(__name__)
+extract_logger = logging.getLogger(__name__)
 
 def extractData() -> dict:
-    load_dotenv()
     token = os.getenv("OPENWEATHER_TOKEN")
-
     if not token:
         raise ValueError("Check TOKEN in .env! I can't see it!")
 
-    logger.info("Token in bank.")
+    extract_logger.info("Token in bank.")
 
     url = "https://api.openweathermap.org/data/2.5/weather"
     parameters = {
@@ -37,30 +38,33 @@ def extractData() -> dict:
     if not response.content:
         raise ValueError("Server return empty file!")
     
-    logger.info("File isn't empty.")
+    extract_logger.info("File isn't empty.")
 
     try:
         data = response.json()
-        logger.info("JSON parsed successfully.")
-    except requests.exceptions.JSONDecodeError:
-        raise ValueError("Server didn't return JSON!")
+        extract_logger.info("JSON parsed successfully.")
+    except requests.exceptions.JSONDecodeError as e:
+        extract_logger.error("Server didn't return JSON: %s", e)
 
     return data
 
 def saveRawData(data: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as rawFile:
         json.dump(data, rawFile, ensure_ascii=False, indent=4)
-        logger.info("File saved!")
+        extract_logger.info("File saved!")
+    extract_logger.info(f"File saved to: {filepath}")
+    return filepath
         
 if __name__ == "__main__":
     fileName = f"rawDataWeather-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-    path = f"<your path to file>{fileName}"
+    path = f"<path to your file>{fileName}"
 
     try:
-        logger.info("Start extraction...")
+        extract_logger.info("Start extraction...")
         weather = extractData()
-        saveRawData(weather, path)
-        logger.info("Success!")
+        file_path = saveRawData(weather, path)
+        loadToDB(file_path)
+        extract_logger.info("Success!")
     except Exception as er:
-        logger.exception("Script dead!")
+        extract_logger.exception("Script dead!")
         sys.exit(1)
