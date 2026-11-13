@@ -31,7 +31,7 @@ def extractData() -> dict:
         "appid": token
     }
 
-    response = requests.get(url, params=parameters, timeout=10)
+    response = requests.get(url, params=parameters, timeout=(3, 10))
 
     response.raise_for_status()
 
