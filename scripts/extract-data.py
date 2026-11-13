@@ -4,11 +4,13 @@ import requests
 import json
 import logging
 
-from load_data import loadToDB
-
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from dotenv import load_dotenv
 from datetime import datetime
+
 from logging_config import configure_logging
+from load_data import loadToDB
 
 load_dotenv()
 configure_logging()
@@ -30,6 +32,18 @@ def extractData() -> dict:
         "units": "metric",
         "appid": token
     }
+
+    session = requests.Session()
+    retry_strategy = Retry(
+            total=5,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"]
+    )
+    
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
 
     response = requests.get(url, params=parameters, timeout=(3, 10))
 
