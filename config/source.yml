@@ -1,0 +1,17 @@
+openweather:
+  url: "https://api.openweathermap.org/data/2.5/weather"
+  timeout: 10
+  parameters:
+    lat: 43.0
+    lon: 143.35
+    lan: "en"
+    units: "metric"
+
+anotherAPI:
+  url: "https://нету("
+  timeout: 10
+  parameters:
+    bla
+    blabla
+    blablabla
+    blablablabla
