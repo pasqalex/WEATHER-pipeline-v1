@@ -1,9 +1,12 @@
 import logging
+import os
 
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
-path = "<path to your file>"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+path = os.path.join(PROJECT_ROOT, "tmp", "logs")
 
 def full_logs(record):
     return record.levelno in (logging.INFO, logging.WARNING)
@@ -29,8 +32,8 @@ def configure_logging() -> None:
     handler2 = logging.FileHandler(f"{path}ERRORS.log")
     handler2.setLevel(logging.ERROR)
     handler2.setFormatter(
-    logging.Formatter(
-            ("%(levelname)-8s | %(logger)s | %(asctime)s | %(message)s")
+        logging.Formatter(
+            ("%(levelname)-8s | %(name)s | %(asctime)s | %(message)s")
         )
     )
 
