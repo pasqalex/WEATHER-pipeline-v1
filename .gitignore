@@ -17,6 +17,7 @@ dist/
 *.log
 logs/
 tmp/
+data/
 
 postgres_data/
 docker-data/
