@@ -1,5 +1,6 @@
 openweather:
   url: "https://api.openweathermap.org/data/2.5/weather"
+  token_env: "OPENWEATHER_TOKEN"
   timeout: 10
   parameters:
     lat: 43.0
@@ -7,11 +8,14 @@ openweather:
     lan: "en"
     units: "metric"
 
-anotherAPI:
-  url: "https://нету("
+openmeteo:
+  url: "https://api.open-meteo.com/v1/forecast"
   timeout: 10
   parameters:
-    bla
-    blabla
-    blablabla
-    blablablabla
+    latitude: 43.0
+    longitude: 143.35
+    daily: ["sunrise", "sunset"]
+    current: ["temperature_2m", "relative_humidity_2m", "wind_speed_10m", "wind_gusts_10m"]
+    timezone: "auto"
+    "forecast_days": 1
+
