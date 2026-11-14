@@ -2,6 +2,7 @@ import os
 import requests
 import logging
 import json
+import yaml
 
 from dotenv import load_dotenv
 from urllib3.util.retry import Retry
@@ -73,3 +74,28 @@ def extractData(configSource: dict, saveTo: str) -> str:
     logger.info("Data saved to %s", saveTo)
     
     return saveTo
+
+if __name__ == "__main__":
+
+    try:
+        with open("../config/source.yml", "r", encoding="utf-8") as file:
+            sources = yaml.safe_load(file)
+    except FileNotFoundError:
+        logger.error("Config file not found at ../config/source.yml")
+
+    successCount = 0
+    failed_sources = []
+
+    for source_name, config in sources.items():
+        try:
+            filePath = extractData(config, f"/home/pasqalex/pipelines/WEATHER-pipeline-v1/data/raw/{source_name}.json")
+            # loadToDB(filePath)
+            successCount += 1
+            logger.info(f"API [ {source_name} ] -- done")
+        except Exception as e:
+            logger.error(f"API [ {source_name} ] -- failed with error: {e}")
+            failed_sources.append(source_name)
+
+    logger.info(f"Result: \n SUCCESS - {successCount} \n FAILED - {len(failed_sources)}")
+    if failed_sources:
+        logger.warning(f"Failed API: {failed_sources}")
