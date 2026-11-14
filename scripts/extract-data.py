@@ -69,7 +69,7 @@ def extractData(configSource: dict, saveTo: str) -> str:
         
 
     with open(saveTo, "w", encoding="utf-8") as file:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
     logger.info("Data saved to %s", saveTo)
     
@@ -77,18 +77,25 @@ def extractData(configSource: dict, saveTo: str) -> str:
 
 if __name__ == "__main__":
 
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(BASE_DIR)
+    configPath = os.path.join(PROJECT_ROOT, "config", "source.yml")
+    rawDir = os.path.join(PROJECT_ROOT, "data", "raw")
+
     try:
-        with open("../config/source.yml", "r", encoding="utf-8") as file:
+        with open(configPath, "r", encoding="utf-8") as file:
             sources = yaml.safe_load(file)
     except FileNotFoundError:
-        logger.error("Config file not found at ../config/source.yml")
+        logger.error(f"Config file not found at {configPath}")
+        exit(1)
 
     successCount = 0
     failed_sources = []
 
     for source_name, config in sources.items():
         try:
-            filePath = extractData(config, f"/home/pasqalex/pipelines/WEATHER-pipeline-v1/data/raw/{source_name}.json")
+            filePath = os.path.join(rawDir, f"{source_name}.json")
+            extractData(config, filePath)
             # loadToDB(filePath)
             successCount += 1
             logger.info(f"API [ {source_name} ] -- done")
