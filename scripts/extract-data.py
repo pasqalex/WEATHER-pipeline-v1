@@ -3,6 +3,7 @@ import sys
 import requests
 import json
 import logging
+import yaml
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -14,24 +15,29 @@ from load_data import loadToDB
 
 load_dotenv()
 configure_logging()
-
 extract_logger = logging.getLogger(__name__)
 
+
+def load_sources(config_path: str = "../config/source.yml") -> dict:
+    with open(config_path, "r", encoding="utf-8") as file:
+        return yaml.safe_load(file)
+
+
 def extractData() -> dict:
+
+    sources = load_sources("../config/source.yml")
+    OPENweather_config = sources["openweather"]
+
     token = os.getenv("OPENWEATHER_TOKEN")
     if not token:
         raise ValueError("Check TOKEN in .env! I can't see it!")
 
     extract_logger.info("Token in bank.")
 
-    url = "https://api.openweathermap.org/data/2.5/weather"
-    parameters = {
-        "lat": 43.0,
-        "lon": 143.35,
-        "lang": "en",
-        "units": "metric",
-        "appid": token
-    }
+    url = OPENweather_config["url"]
+    parameters = OPENweather_config["parameters"].copy()
+    parameters["appid"] = token
+    timeout = OPENweather_config["timeout"]
 
     session = requests.Session()
     retry_strategy = Retry(
@@ -45,7 +51,11 @@ def extractData() -> dict:
     session.mount("https://", adapter)
     session.mount("http://", adapter)
 
-    response = requests.get(url, params=parameters, timeout=(3, 10))
+    response = session.get(
+        url, 
+        params=parameters, 
+        timeout=timeout
+    )
 
     response.raise_for_status()
 
