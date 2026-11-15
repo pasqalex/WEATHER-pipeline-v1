@@ -7,7 +7,7 @@ import yaml
 from dotenv import load_dotenv
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
-from datetime import datetime
+from datetime import datetime, timezone
 
 from logging_config import configure_logging
 
@@ -34,7 +34,7 @@ def extractData(configSource: dict, saveTo: str) -> str:
         parameters["appid"] = token
 
     logger.info("Making a request to a URL: %s", url)
-    logger.debug("With parameters: %s, %s", parameters, timeout)
+    logger.info("With parameters: %s, %s", parameters, timeout)
 
     session = requests.Session()
 
@@ -92,9 +92,11 @@ if __name__ == "__main__":
     successCount = 0
     failed_sources = []
 
+    dateNow = datetime.now(timezone.utc)
+
     for source_name, config in sources.items():
         try:
-            filePath = os.path.join(rawDir, f"{source_name}.json")
+            filePath = os.path.join(rawDir, f"{source_name}-{dateNow.strftime('%d-%m-%Y_%H:%M ')}.json")
             extractData(config, filePath)
             # loadToDB(filePath)
             successCount += 1
@@ -103,6 +105,6 @@ if __name__ == "__main__":
             logger.error(f"API [ {source_name} ] -- failed with error: {e}")
             failed_sources.append(source_name)
 
-    logger.info(f"Result: \n SUCCESS - {successCount} \n FAILED - {len(failed_sources)}")
+    logger.info(f"Result: SUCCESS - {successCount}; FAILED - {len(failed_sources)};")
     if failed_sources:
         logger.warning(f"Failed API: {failed_sources}")
