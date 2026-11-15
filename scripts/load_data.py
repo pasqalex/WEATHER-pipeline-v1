@@ -4,7 +4,7 @@ import logging
 import json
 
 from dotenv import load_dotenv
-from datetime import UTC, datetime
+from datetime import datetime
 from logging_config import configure_logging
 
 load_dotenv()
