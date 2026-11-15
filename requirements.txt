@@ -3,3 +3,4 @@ pandas
 logging
 python3-json-logging
 requests
+pyyaml
