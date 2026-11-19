@@ -28,8 +28,11 @@ def extractData(configSource: dict, saveTo: str) -> str:
         saveTo: absolute path to raw JSON
 
     Return:
-        Path to the saved file 
+        Path to the saved file
     """
+
+    logger.info("START EXTRACTION...")
+
     url = configSource["url"]
     parameters = {**configSource["parameters"]}
     timeout = configSource["timeout"]
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     PROJECT_ROOT = os.path.dirname(BASE_DIR)
     configPath = os.path.join(PROJECT_ROOT, "config", "source.yml")
     rawDir = os.path.join(PROJECT_ROOT, "data", "raw")
-
+    os.makedirs(rawDir, exist_ok=True)
     try:
         with open(configPath, "r", encoding="utf-8") as file:
             sources = yaml.safe_load(file)
@@ -104,11 +107,13 @@ if __name__ == "__main__":
     successCount = 0
     failedSources = []
 
+    startTime = datetime.now()
+    
     dateNow = datetime.now(timezone.utc)
 
-    for sourceName, config in sources.items():
+    for sourceName, config in sources.items(): 
         try:
-            filePath = os.path.join(rawDir, f"{sourceName}-{dateNow.strftime('%d.%m.%Y_%H-%M')}.json")
+            filePath = os.path.join(rawDir, f"{sourceName}-{dateNow.strftime('%Y-%m-%d_%H-%M')}.json")
             extractData(config, filePath)
             # loadToDB(filePath)
             successCount += 1
@@ -117,6 +122,8 @@ if __name__ == "__main__":
             logger.error("API [ %s ] -- failed with error: %s", sourceName, e)
             failedSources.append(sourceName)
 
-    logger.info(f"Result: SUCCESS - {successCount}; FAILED - {len(failedSources)};")
+    endTime = datetime.now()
+    
+    logger.info(f"Result: SUCCESS - {successCount}; FAILED - {len(failedSources)}; TIME - {endTime - startTime}")
     if failedSources:
         logger.warning("Failed API: [ %s ]", failedSources)
